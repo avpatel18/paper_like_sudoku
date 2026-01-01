@@ -12,13 +12,16 @@ export function generateSudoku(difficulty = 'medium') {
   // Solve the rest
   solveSudoku(board);
 
+  // Clone the solution before removing digits
+  const solution = board.map(row => [...row]);
+
   // Remove digits based on difficulty
   const attempts = difficulty === 'hard' ? 50 : difficulty === 'medium' ? 40 : 30;
   removeDigits(board, attempts);
 
   // Create initial state structure
   // value: number | 0, isFixed: boolean, notes: number[]
-  const initialBoard = board.map(row => 
+  const initialBoard = board.map(row =>
     row.map(val => ({
       value: val,
       isFixed: val !== BLANK,
@@ -27,7 +30,7 @@ export function generateSudoku(difficulty = 'medium') {
     }))
   );
 
-  return initialBoard;
+  return { board: initialBoard, solution };
 }
 
 function fillBox(board, row, col) {
@@ -96,28 +99,28 @@ function removeDigits(board, count) {
 }
 
 export function isValidMove(board, row, col, num) {
-    if (!num) return true; 
-    // Check row, col, box for conflicts
-    // Note: board here is the object structure { value: ... }
-    
-    // Check Row
-    for (let c = 0; c < 9; c++) {
-        if (c !== col && board[row][c].value === num) return false;
+  if (!num) return true;
+  // Check row, col, box for conflicts
+  // Note: board here is the object structure { value: ... }
+
+  // Check Row
+  for (let c = 0; c < 9; c++) {
+    if (c !== col && board[row][c].value === num) return false;
+  }
+  // Check Col
+  for (let r = 0; r < 9; r++) {
+    if (r !== row && board[r][col].value === num) return false;
+  }
+  // Check Box
+  const startRow = Math.floor(row / 3) * 3;
+  const startCol = Math.floor(col / 3) * 3;
+  for (let r = 0; r < 3; r++) {
+    for (let c = 0; c < 3; c++) {
+      if ((startRow + r !== row || startCol + c !== col) &&
+        board[startRow + r][startCol + c].value === num) {
+        return false;
+      }
     }
-    // Check Col
-    for (let r = 0; r < 9; r++) {
-        if (r !== row && board[r][col].value === num) return false;
-    }
-    // Check Box
-    const startRow = Math.floor(row / 3) * 3;
-    const startCol = Math.floor(col / 3) * 3;
-    for (let r = 0; r < 3; r++) {
-        for (let c = 0; c < 3; c++) {
-            if ((startRow + r !== row || startCol + c !== col) && 
-                board[startRow + r][startCol + c].value === num) {
-                return false;
-            }
-        }
-    }
-    return true;
+  }
+  return true;
 }

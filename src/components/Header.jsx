@@ -7,7 +7,7 @@ const formatTime = (seconds) => {
     return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-function Header({ difficulty, timer, mistakes, status }) {
+function Header({ difficulty, timer, mistakes, status, onBack }) {
     return (
         <div className="header">
             <div className="top-bar">
@@ -31,7 +31,7 @@ function Header({ difficulty, timer, mistakes, status }) {
         Refactoring header to match this.
       */}
             <div className="nav-bar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <button className="control-btn"><span className="icon">←</span></button>
+                <button className="control-btn" onClick={onBack}><span className="icon">←</span></button>
                 <div className="smart-stats">Stats</div>
                 <button className="control-btn"><span className="icon">⏸</span></button>
                 <button className="control-btn"><span className="icon">⚙️</span></button>

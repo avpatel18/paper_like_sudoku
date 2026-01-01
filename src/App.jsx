@@ -9,16 +9,16 @@ import Header from './components/Header';
 import SudokuBoard from './components/SudokuBoard';
 import Controls from './components/Controls';
 import Numpad from './components/Numpad';
+import Menu from './components/Menu';
 
 function App() {
   const gameState = useSudoku();
 
-  // Initial New Game on mount
-  React.useEffect(() => {
-    if (gameState.status === 'idle') {
-      gameState.newGame('medium');
-    }
-  }, []);
+  // Removed auto-start useEffect to show Menu first.
+
+  if (gameState.status === 'idle') {
+    return <Menu onStart={gameState.newGame} />;
+  }
 
   return (
     <div className="app-container">
@@ -27,6 +27,7 @@ function App() {
         timer={gameState.timer}
         mistakes={gameState.mistakes}
         status={gameState.status}
+        onBack={gameState.quitGame} // Connect back button
       />
 
       <SudokuBoard
@@ -40,6 +41,7 @@ function App() {
         onErase={gameState.erase}
         onToggleNotes={gameState.toggleNotes}
         notesMode={gameState.notesMode}
+        onHint={gameState.getHint} // Connect hint button
       />
 
       <Numpad

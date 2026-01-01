@@ -1,6 +1,6 @@
 import React from 'react';
 
-function Controls({ onUndo, onErase, onToggleNotes, notesMode }) {
+function Controls({ onUndo, onErase, onToggleNotes, notesMode, onHint }) {
     return (
         <div className="controls">
             <button className="control-btn" onClick={onUndo}>
@@ -17,7 +17,7 @@ function Controls({ onUndo, onErase, onToggleNotes, notesMode }) {
                 <span className="icon">✎</span>
                 <span>Notes</span>
             </button>
-            <button className="control-btn">
+            <button className="control-btn" onClick={onHint}>
                 <span className="icon">💡</span>
                 <span>Hint</span>
             </button>
