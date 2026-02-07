@@ -1,22 +1,27 @@
 {
-  "name": "Paper Sudoku",
-  "short_name": "Sudoku",
-  "description": "A paper-like Sudoku experience.",
-  "start_url": ".",
+  "name": "Sudokey",
+  "short_name": "Sudokey",
+  "description": "Play Sudoku puzzles with multiple difficulty levels",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#f4f1ea",
-  "theme_color": "#f4f1ea",
-  "orientation": "portrait",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
   "icons": [
     {
-      "src": "pwa-192x192.png",
+      "src": "/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "pwa-512x512.png",
+      "src": "/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
-  ]
+  ],
+  "categories": ["games", "entertainment"],
+  "screenshots": []
 }

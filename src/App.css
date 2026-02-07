@@ -1,0 +1,24 @@
+.app-container {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  overflow-x: hidden;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 500px) {
+  .game-wrapper {
+    padding: 10px;
+  }
+  .sudoku-cell {
+    font-size: 1.2rem;
+  }
+}
