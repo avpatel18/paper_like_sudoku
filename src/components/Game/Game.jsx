@@ -14,7 +14,6 @@ import './Game.css';
 const Game = ({ difficulty, onBack, onToggleTheme, currentTheme }) => {
   const [gameState, setGameState] = useState(null);
   const [selectedCell, setSelectedCell] = useState(null); // { r, c }
-  const [mistakes, setMistakes] = useState(0);
   const [timer, setTimer] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [pencilMode, setPencilMode] = useState(false);
@@ -24,9 +23,9 @@ const Game = ({ difficulty, onBack, onToggleTheme, currentTheme }) => {
   const [showPause, setShowPause] = useState(false);
   const [fontSize, setFontSize] = useState(1); // 1 = normal, 1.2 = large, etc.
   const [notifications, setNotifications] = useState(true);
-  const [hintsUsed, setHintsUsed] = useState(0);
 
   const timerRef = useRef(null);
+
 
   // Initialize game
   useEffect(() => {
@@ -70,7 +69,7 @@ const Game = ({ difficulty, onBack, onToggleTheme, currentTheme }) => {
   const handleNumberInput = useCallback((num) => {
     if (isPaused || isGameFinished || !selectedCell || !gameState) return;
     const { r, c } = selectedCell;
-    
+
     // Check if it's an initial cell
     if (gameState.initialBoard[r][c] !== null) return;
 
@@ -78,7 +77,7 @@ const Game = ({ difficulty, onBack, onToggleTheme, currentTheme }) => {
       // Logic for pencil marks (notes)
       const newGameState = { ...gameState };
       if (!newGameState.notes) newGameState.notes = Array(9).fill(null).map(() => Array(9).fill(null).map(() => []));
-      
+
       const currentNotes = newGameState.notes[r][c];
       if (currentNotes.includes(num)) {
         newGameState.notes[r][c] = currentNotes.filter(n => n !== num);
@@ -90,50 +89,41 @@ const Game = ({ difficulty, onBack, onToggleTheme, currentTheme }) => {
     }
 
     // Save history for undo
-    setHistory([...history, { 
-      board: gameState.currentBoard.map(row => [...row]), 
-      mistakes 
+    setHistory([...history, {
+      board: gameState.currentBoard.map(row => [...row])
+      // mistakes removed
     }]);
 
-    const isCorrect = gameState.solution[r][c] === num;
     const newBoard = gameState.currentBoard.map(row => [...row]);
     newBoard[r][c] = num;
 
-    if (!isCorrect) {
-      setMistakes(m => m + 1);
-      if (mistakes + 1 >= 3) {
-        setIsGameFinished(true);
-        saveResult(false, newBoard);
-      }
-    } else {
-      // Check for win
-      const isWin = newBoard.every((row, ri) => 
-        row.every((cell, ci) => cell === gameState.solution[ri][ci])
-      );
-      if (isWin) {
-        setIsGameFinished(true);
-        saveResult(true, newBoard);
-      }
+    // Check for win
+    const isWin = newBoard.every((row, ri) =>
+      row.every((cell, ci) => cell === gameState.solution[ri][ci])
+    );
+
+    if (isWin) {
+      setIsGameFinished(true);
+      saveResult(true, newBoard);
     }
 
     setGameState({ ...gameState, currentBoard: newBoard });
-  }, [selectedCell, gameState, pencilMode, mistakes, history, isPaused, isGameFinished, timer, difficulty]);
+  }, [selectedCell, gameState, pencilMode, history, isPaused, isGameFinished, timer, difficulty]);
 
   const saveResult = (won, board) => {
     const user = JSON.parse(localStorage.getItem('sudoku-user'));
     if (!user) return;
-    
+
     const historyEntry = {
       date: new Date().toISOString(),
       difficulty,
       time: timer,
-      mistakes,
       won,
       board: board.map(row => [...row]),
       solution: gameState.solution.map(row => [...row]),
       initialBoard: gameState.initialBoard.map(row => [...row])
     };
-    
+
     const gameHistory = JSON.parse(localStorage.getItem(`history-${user.email}`) || '[]');
     gameHistory.unshift(historyEntry);
     localStorage.setItem(`history-${user.email}`, JSON.stringify(gameHistory.slice(0, 50))); // Keep last 50
@@ -143,7 +133,6 @@ const Game = ({ difficulty, onBack, onToggleTheme, currentTheme }) => {
     if (history.length === 0 || isPaused || isGameFinished) return;
     const lastState = history[history.length - 1];
     setGameState({ ...gameState, currentBoard: lastState.board });
-    setMistakes(lastState.mistakes);
     setHistory(history.slice(0, -1));
   };
 
@@ -151,7 +140,7 @@ const Game = ({ difficulty, onBack, onToggleTheme, currentTheme }) => {
     if (isPaused || isGameFinished || !selectedCell || !gameState) return;
     const { r, c } = selectedCell;
     if (gameState.initialBoard[r][c] !== null) return;
-    
+
     const newBoard = gameState.currentBoard.map(row => [...row]);
     newBoard[r][c] = null;
     setGameState({ ...gameState, currentBoard: newBoard });
@@ -161,7 +150,7 @@ const Game = ({ difficulty, onBack, onToggleTheme, currentTheme }) => {
     if (isPaused || isGameFinished || !selectedCell || !gameState || hintsUsed >= 3) return;
     const { r, c } = selectedCell;
     const correctVal = gameState.solution[r][c];
-    
+
     // Don't count hint if cell already has correct value
     if (gameState.currentBoard[r][c] === correctVal) return;
 
@@ -175,10 +164,8 @@ const Game = ({ difficulty, onBack, onToggleTheme, currentTheme }) => {
   const handleRestart = () => {
     const data = generateSudoku(difficulty);
     setGameState(data);
-    setMistakes(0);
     setTimer(0);
     setHistory([]);
-    setHintsUsed(0);
     setIsPaused(false);
     setIsGameFinished(false);
     setShowPause(false);
@@ -199,23 +186,12 @@ const Game = ({ difficulty, onBack, onToggleTheme, currentTheme }) => {
       </header>
 
       <div className="stats-bar">
-        <div className="mistakes">
-          {mistakes > 0 ? (
-            <div style={{ display: 'flex', gap: '4px', color: 'var(--error-color)' }}>
-              {Array(3).fill(0).map((_, i) => (
-                <span key={i} style={{ opacity: i < mistakes ? 1 : 0.2 }}>❌</span>
-              ))}
-            </div>
-          ) : (
-            <span>Mistakes: 0/3</span>
-          )}
-        </div>
-        <div className="timer">{formatTime(timer)}</div>
+        <div className="timer" style={{ width: '100%', textAlign: 'center' }}>{formatTime(timer)}</div>
       </div>
 
       <div className="game-main">
-        <SudokuBoard 
-          board={gameState.currentBoard} 
+        <SudokuBoard
+          board={gameState.currentBoard}
           initialBoard={gameState.initialBoard}
           selectedCell={selectedCell}
           onCellClick={handleCellClick}
@@ -223,16 +199,14 @@ const Game = ({ difficulty, onBack, onToggleTheme, currentTheme }) => {
           notes={gameState.notes || []}
           difficulty={difficulty}
         />
-        
+
         <div className="controls-section">
-          <Tools 
-            onUndo={handleUndo} 
-            onErase={handleErase} 
-            onHint={handleHint} 
+          <Tools
+            onUndo={handleUndo}
+            onErase={handleErase}
             pencilMode={pencilMode}
             onTogglePencil={() => setPencilMode(!pencilMode)}
             canUndo={history.length > 0}
-            hintsUsed={hintsUsed}
           />
           <NumberPad onNumberInput={handleNumberInput} />
         </div>
@@ -240,8 +214,8 @@ const Game = ({ difficulty, onBack, onToggleTheme, currentTheme }) => {
 
       <AnimatePresence>
         {showSettings && (
-          <SettingsModal 
-            onClose={() => setShowSettings(false)} 
+          <SettingsModal
+            onClose={() => setShowSettings(false)}
             fontSize={fontSize}
             setFontSize={setFontSize}
             notifications={notifications}
@@ -249,15 +223,15 @@ const Game = ({ difficulty, onBack, onToggleTheme, currentTheme }) => {
           />
         )}
         {showPause && (
-          <PauseModal 
-            onClose={() => setShowPause(false)} 
+          <PauseModal
+            onClose={() => setShowPause(false)}
             onRestart={handleRestart}
             onContinue={() => setShowPause(false)}
           />
         )}
         {isGameFinished && (
-          <ResultModal 
-            isWin={mistakes < 3} 
+          <ResultModal
+            isWin={true}
             timer={formatTime(timer)}
             onRestart={handleRestart}
             onBack={onBack}
